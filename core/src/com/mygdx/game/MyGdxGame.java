@@ -3,29 +3,45 @@ package com.mygdx.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.assets.AssetManager; // Use AssetManager for better asset handling
+import com.badlogic.gdx.assets.AssetManager;
 
 public class MyGdxGame extends Game {
-	SpriteBatch batch;
-	AssetManager assetManager; // Manage all assets in one place
+	private SpriteBatch batch;
+	private AssetManager assetManager;
+	private Texture mapTexture;
+	private Texture zeppelinTexture;
 
 	@Override
 	public void create() {
 		batch = new SpriteBatch();
-		assetManager = new AssetManager(); // Initialize the asset manager
+		assetManager = new AssetManager();
 
 		// Load textures using AssetManager
 		assetManager.load("map1.png", Texture.class);
 		assetManager.load("Zepplin L19.png", Texture.class);
-		assetManager.finishLoading(); // Blocks until all assets are loaded
+		assetManager.finishLoading(); // Block until assets are loaded
 
+		// Retrieve the textures once loaded
 		if (assetManager.isLoaded("map1.png") && assetManager.isLoaded("Zepplin L19.png")) {
-			Texture mapTexture = assetManager.get("map1.png", Texture.class);
-			Texture zeppelinTexture = assetManager.get("Zepplin L19.png", Texture.class);
-			setScreen(new GameScreen(this, batch, mapTexture, zeppelinTexture)); // Pass loaded textures to GameScreen
+			mapTexture = assetManager.get("map1.png", Texture.class);
+			zeppelinTexture = assetManager.get("Zepplin L19.png", Texture.class);
 		}
+
+		// Start the initial game screen
+		startGameScreen();
 	}
 
+	/**
+	 * Starts or restarts the main game screen.
+	 */
+	public void startGameScreen() {
+		// Ensure textures are properly loaded before switching to the screen
+		if (mapTexture != null && zeppelinTexture != null) {
+			setScreen(new GameScreen(this, batch, mapTexture, zeppelinTexture));
+		} else {
+			System.err.println("Error: Textures not properly loaded.");
+		}
+	}
 
 	@Override
 	public void dispose() {
