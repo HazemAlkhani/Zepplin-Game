@@ -1,158 +1,195 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class GameScreen implements Screen {
-    // End point to be reached
-    private final Vector2 finalDestination = new Vector2(300, 397); // Example end point, Liverpool
+    private final Stage stage;
+    private final Label speedLabel;
+    private final Label windLabel;
+    private final Label timerLabel;
+    private final SpriteBatch batch;
 
-    final MyGdxGame game;
-    SpriteBatch batch;
-    ShapeRenderer shapeRenderer;
-    FrameBuffer fogBuffer;
-    Texture fogTexture;
-    Texture mapTexture, zeppelinTexture;
-    Player player;
-    OrthographicCamera camera;
-    Viewport viewport;
-    EnvironmentalManager environmentalManager;
+    private final Vector2 finalDestination = new Vector2(50, 238); // Example end point
+    private float gameTime = 0; // Timer to track total game time
+    private final float maxGameTime = 60;
+
+    private final ShapeRenderer shapeRenderer;
+    private final Texture mapTexture;
+    private final Texture zeppelinTexture;
+    private final Player player;
+    private final OrthographicCamera camera;
+    private final EnvironmentalManager environmentalManager;
+    private final FrameBuffer fogBuffer;
 
 
-    public GameScreen(MyGdxGame game, SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture) {
-        this.game = game;
+    public GameScreen(SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture) {
+
         this.batch = batch;
         this.mapTexture = mapTexture;
         this.zeppelinTexture = zeppelinTexture;
 
-        this.shapeRenderer = new ShapeRenderer();
-        this.camera = new OrthographicCamera();
-        this.viewport = new StretchViewport(800, 600, camera);
-        this.camera.position.set(400, 300, 0); // Center the camera
-        this.camera.update();
+        camera = new OrthographicCamera(800, 600);
+        camera.position.set(400, 300, 0); // Center the camera
+        camera.update();
 
-        // Initialize player at specified coordinates
-        this.player = new Player(620, 500); // Adjust these coordinates to suit the map size
-        this.environmentalManager = new EnvironmentalManager();
+        environmentalManager = new EnvironmentalManager();
+        player = new Player(620, 500);
 
-        // Create fog buffer for special visual effects
-        this.fogBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 800, 600, false);
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
+
+        BitmapFont font = new BitmapFont();
+        speedLabel = new Label("Speed: 0", new Label.LabelStyle(font, Color.BLUE));
+        windLabel = new Label("Wind: 0,0", new Label.LabelStyle(font, Color.BLUE));
+        timerLabel = new Label("Time: 0", new Label.LabelStyle(font, Color.YELLOW));
+
+        Table table = new Table();
+        table.top().left();
+        table.setFillParent(true);
+        table.add(speedLabel).pad(10);
+        table.row();
+        table.add(windLabel).pad(10);
+        table.row();
+        table.add(timerLabel).pad(10);
+        stage.addActor(table);
+
+        // Ensure shapeRenderer is initialized
+        shapeRenderer = new ShapeRenderer();
+
+        fogBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 800, 600, false);
         clearFog();
-        this.fogTexture = fogBuffer.getColorBufferTexture();
-        this.fogTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        // Log initial setup information
-        System.out.println("Initial Player Position: " + player.getPosition());
-        System.out.println("Zeppelin Texture Loaded: " + (zeppelinTexture != null));
-        System.out.println("Map Texture Loaded: " + (mapTexture != null));
+        Texture fogTexture = fogBuffer.getColorBufferTexture();
+        fogTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
     }
 
-    /**
-     * Clears the fog buffer.
-     */
+    private void handleInput() {
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && !player.canMove) {
+            player.startMoving();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            player.moveUp();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            player.moveDown();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && player.canMove) {
+            player.adjustSpeed(0.1f);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.Z)) {
+            player.adjustSpeed(-0.1f);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            restartGame();
+        }
+    }
+    private void restartGame() {
+        player.reset(620, 500);
+        gameTime = 0;
+    }
+
+
+    @Override
+    public void show() {
+        // Typically used to setup resources or configurations when screen is shown
+    }
     private void clearFog() {
+        // Assuming you want to clear a framebuffer or similar
         fogBuffer.begin();
-        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClearColor(1, 1, 1, 0); // Clear with opaque white
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         fogBuffer.end();
     }
 
-    @Override
-    public void show() {}
-
-    /**
-     * Checks if the player has reached the final destination and ends the game if so.
-     */
-    private void checkEndGame() {
-        if (player.getPosition().epsilonEquals(finalDestination, 1f)) {
-            System.out.println("Congratulations, you have reached the destination!");
-            Gdx.app.exit(); // Exit the game or switch to a winning screen
-        }
+    private void updateUI() {
+        speedLabel.setText("Speed: " + player.getSpeed());
+        Vector2 wind = environmentalManager.getWind();
+        windLabel.setText(String.format("Wind: %.2f, %.2f", wind.x, wind.y));
+        timerLabel.setText(String.format("Time: %.2f s", gameTime));
     }
 
-    @Override
     public void render(float delta) {
-        Vector2 playerPosition = player.getPosition();
-        Vector2 playerVelocity = player.getVelocity();
+        Gdx.gl.glClearColor(1, 1, 1, 1); // Set clear color to white
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear the screen
 
-        System.out.println("Player Position: " + playerPosition + ", Velocity: " + playerVelocity);
+        camera.update(); // Update the camera
+        batch.setProjectionMatrix(camera.combined); // Set the batch to use the camera's coordinate system
 
-        // Update game logic
-        handleInput();  // Handle player input
-        environmentalManager.update(delta, player);  // Update environmental effects on the player
-        player.update(delta);  // Update player's movement
+        // Handle user input
+        handleInput();
+        gameTime += delta;
+        player.update(delta);
+        environmentalManager.update(delta, player);
 
-        // Clear the screen
-        ScreenUtils.clear(1, 1, 1, 1);
-
-        // Update camera and apply its projection matrix
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
-
-        // Draw game objects and effects
+        // Drawing the textures
         batch.begin();
-        batch.draw(mapTexture, 0, 0, 800, 600); // Draw the entire map
-        batch.draw(zeppelinTexture, playerPosition.x, playerPosition.y, 50, 25); // Draw zeppelin
-        batch.draw(fogTexture, 0, 0, 800, 600);
+        batch.draw(mapTexture, 0, 0, 800, 600); // Draw the map
+        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, 50, 25); // Draw the zeppelin
         batch.end();
 
-        checkEndGame();
+        // Draw additional shapes if needed
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.circle(finalDestination.x, finalDestination.y, 10);
+        shapeRenderer.end();
+
+        // Update and draw the stage last to ensure it is on top
+        updateUI();
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.draw();
+
+        // Check game conditions
+        checkGameEndConditions();
     }
 
-    /**
-     * Handles player input to adjust velocity based on key presses.
-     */
-    private void handleInput() {
-        // Press 'A' to start moving left and increase speed
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-            player.startMovingLeft();
-            player.adjustSpeed(1); // Increase speed by 1 unit
+
+    private void checkGameEndConditions() {
+        if (player.isAtEndpoint(finalDestination)) {
+            showDialog("Congratulations!", "You have reached the endpoint!");
+            // Consider what should happen here: reset game, stop movement, etc.
         }
-
-        // Press 'Z' to reduce speed, ensuring it doesn't drop below 1
-        if (Gdx.input.isKeyPressed(Input.Keys.Z)) {
-            player.adjustSpeed(-1); // Decrease speed by 1 unit
+        if (player.isOutOfBounds(0)) { // Assuming 0 is the left boundary
+            showDialog("Game Over", "You went out of bounds!");
+            // Handle game over state
         }
+    }
 
-        // Retrieve the player's current speed to match it for vertical movement
-        float currentSpeed = player.getSpeed();
-        player.getVelocityY();
-        float currentVelocityY;
+    private void showDialog(String title, String message) {
+        Dialog dialog = new Dialog(title, new Window.WindowStyle(new BitmapFont(), Color.WHITE, createDialogBackground()));
+        dialog.text(new Label(message, new Label.LabelStyle(new BitmapFont(), Color.WHITE)));
+        dialog.button(new TextButton("OK", new TextButton.TextButtonStyle()));
+        dialog.show(stage);
+    }
 
-        // Adjust vertical movement using arrow keys, matching horizontal speed
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            currentVelocityY = currentSpeed; // Move up at the same speed as the zeppelin
-        } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            currentVelocityY = -currentSpeed; // Move down at the same speed
-        } else {
-            currentVelocityY = 0; // Stop vertical movement
-        }
 
-        // Apply only the vertical movement to the player's velocity
-        player.setVelocity(player.getVelocityX(), currentVelocityY);
 
-        // Press 'R' to restart the game
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            game.startGameScreen(); // Restart the game
-        }
-
-        // Log the player's velocity for debugging purposes
-        System.out.println("Player Velocity: " + player.getVelocity() + ", Speed: " + player.getSpeed());
+    private Drawable createDialogBackground() {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fill();
+        TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+        pixmap.dispose();
+        return drawable;
     }
 
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
@@ -163,6 +200,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {}
+
+
 
     @Override
     public void dispose() {
