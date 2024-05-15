@@ -4,58 +4,56 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class GameScreen implements Screen {
+    private final SpriteBatch batch;
+    private final Texture mapTexture;
+    private final Texture zeppelinTexture;
+    private final OrthographicCamera camera;
+    private final Player player;
+    private final EnvironmentalManager environmentalManager;
+    private final FrameBuffer fogBuffer;
+    private final ShapeRenderer shapeRenderer;
+    private final Vector2 finalDestination;
     private final Stage stage;
     private final Label speedLabel;
     private final Label windLabel;
     private final Label timerLabel;
-    private final SpriteBatch batch;
+    private final Skin uiSkin;
+    private float gameTime;
+    private static final float MAX_GAME_TIME = 60f;
+    private static final float ENDPOINT_RADIUS = 3f;
 
-    private final Vector2 finalDestination = new Vector2(50, 238); // Example end point
-    private float gameTime = 0; // Timer to track total game time
-    private final float maxGameTime = 60;
-
-    private final ShapeRenderer shapeRenderer;
-    private final Texture mapTexture;
-    private final Texture zeppelinTexture;
-    private final Player player;
-    private final OrthographicCamera camera;
-    private final EnvironmentalManager environmentalManager;
-    private final FrameBuffer fogBuffer;
-
-
-    public GameScreen(SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture) {
-
+    public GameScreen(SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture, Skin uiSkin) {
         this.batch = batch;
         this.mapTexture = mapTexture;
         this.zeppelinTexture = zeppelinTexture;
+        this.uiSkin = uiSkin;
 
         camera = new OrthographicCamera(800, 600);
-        camera.position.set(400, 300, 0); // Center the camera
+        camera.position.set(400, 300, 0);
         camera.update();
 
-        environmentalManager = new EnvironmentalManager();
         player = new Player(620, 500);
+        environmentalManager = new EnvironmentalManager();
+        fogBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 800, 600, false);
+        shapeRenderer = new ShapeRenderer();
+        finalDestination = new Vector2(60, 297);
+        gameTime = MAX_GAME_TIME;
 
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        BitmapFont font = new BitmapFont();
-        speedLabel = new Label("Speed: 0", new Label.LabelStyle(font, Color.BLUE));
-        windLabel = new Label("Wind: 0,0", new Label.LabelStyle(font, Color.BLUE));
-        timerLabel = new Label("Time: 0", new Label.LabelStyle(font, Color.YELLOW));
+        speedLabel = new Label("Speed: 0", uiSkin);
+        windLabel = new Label("Wind: 0,0", uiSkin);
+        timerLabel = new Label("Time: 60", uiSkin);
 
         Table table = new Table();
         table.top().left();
@@ -67,18 +65,18 @@ public class GameScreen implements Screen {
         table.add(timerLabel).pad(10);
         stage.addActor(table);
 
-        // Ensure shapeRenderer is initialized
-        shapeRenderer = new ShapeRenderer();
-
-        fogBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 800, 600, false);
         clearFog();
-        Texture fogTexture = fogBuffer.getColorBufferTexture();
-        fogTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
     }
 
     private void handleInput() {
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && !player.canMove) {
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             player.startMoving();
+            if (player.canMove) {
+                player.adjustSpeed(0.1f);
+            }
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.Z)) {
+            player.adjustSpeed(-0.1f);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
             player.moveUp();
@@ -86,30 +84,19 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             player.moveDown();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && player.canMove) {
-            player.adjustSpeed(0.1f);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.Z)) {
-            player.adjustSpeed(-0.1f);
-        }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             restartGame();
         }
     }
+
     private void restartGame() {
         player.reset(620, 500);
-        gameTime = 0;
+        gameTime = MAX_GAME_TIME;
     }
 
-
-    @Override
-    public void show() {
-        // Typically used to setup resources or configurations when screen is shown
-    }
     private void clearFog() {
-        // Assuming you want to clear a framebuffer or similar
         fogBuffer.begin();
-        Gdx.gl.glClearColor(1, 1, 1, 0); // Clear with opaque white
+        Gdx.gl.glClearColor(1, 1, 1, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         fogBuffer.end();
     }
@@ -121,71 +108,73 @@ public class GameScreen implements Screen {
         timerLabel.setText(String.format("Time: %.2f s", gameTime));
     }
 
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
+
+    @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1, 1, 1, 1); // Set clear color to white
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear the screen
-
-        camera.update(); // Update the camera
-        batch.setProjectionMatrix(camera.combined); // Set the batch to use the camera's coordinate system
-
-        // Handle user input
         handleInput();
-        gameTime += delta;
-        player.update(delta);
-        environmentalManager.update(delta, player);
+        if (player.hasGameStarted()) {
+            gameTime -= delta;
+        }
+        if (gameTime <= 0) {
+            showDialog("Game Over", "You are too late!");
+            restartGame();
+        }
 
-        // Drawing the textures
+        player.update(delta);
+        environmentalManager.update(player);
+
+        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.draw(mapTexture, 0, 0, 800, 600); // Draw the map
-        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, 50, 25); // Draw the zeppelin
+        batch.draw(mapTexture, 0, 0, 800, 600);
+        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, 30, 15); // Adjusted Zeppelin size
         batch.end();
 
-        // Draw additional shapes if needed
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.RED);
-        shapeRenderer.circle(finalDestination.x, finalDestination.y, 10);
+        shapeRenderer.circle(finalDestination.x, finalDestination.y, ENDPOINT_RADIUS); // Adjusted endpoint radius
         shapeRenderer.end();
 
-        // Update and draw the stage last to ensure it is on top
         updateUI();
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
 
-        // Check game conditions
         checkGameEndConditions();
     }
 
-
     private void checkGameEndConditions() {
-        if (player.isAtEndpoint(finalDestination)) {
-            showDialog("Congratulations!", "You have reached the endpoint!");
-            // Consider what should happen here: reset game, stop movement, etc.
+        if (gameTime <= 0 && !player.isAtEndpoint(finalDestination)) {
+            showDialog("Game Over", "You are too late!");
+            restartGame();
         }
-        if (player.isOutOfBounds(0)) { // Assuming 0 is the left boundary
-            showDialog("Game Over", "You went out of bounds!");
-            // Handle game over state
+
+        if (player.isAtEndpoint(finalDestination)) {
+            showDialog("Congratulations!", "You have reached Liverpool!");
+        }
+
+        if (player.isOutOfBounds(0)) {
+            showDialog("Game Over", "You went far away!");
+            restartGame();
         }
     }
 
     private void showDialog(String title, String message) {
-        Dialog dialog = new Dialog(title, new Window.WindowStyle(new BitmapFont(), Color.WHITE, createDialogBackground()));
-        dialog.text(new Label(message, new Label.LabelStyle(new BitmapFont(), Color.WHITE)));
-        dialog.button(new TextButton("OK", new TextButton.TextButtonStyle()));
+        Dialog dialog = new Dialog(title, uiSkin);
+        dialog.text(message);
+        dialog.button("OK");
         dialog.show(stage);
+        dialog.pack();
+        dialog.setPosition((Gdx.graphics.getWidth() - dialog.getWidth()) / 2,
+                (Gdx.graphics.getHeight() - dialog.getHeight()) / 2);
     }
-
-
-
-    private Drawable createDialogBackground() {
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.BLACK);
-        pixmap.fill();
-        TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
-        pixmap.dispose();
-        return drawable;
-    }
-
 
     @Override
     public void resize(int width, int height) {
@@ -201,8 +190,6 @@ public class GameScreen implements Screen {
     @Override
     public void hide() {}
 
-
-
     @Override
     public void dispose() {
         batch.dispose();
@@ -210,5 +197,7 @@ public class GameScreen implements Screen {
         mapTexture.dispose();
         zeppelinTexture.dispose();
         fogBuffer.dispose();
+        stage.dispose();
+        uiSkin.dispose();
     }
 }
