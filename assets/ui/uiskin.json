@@ -10,23 +10,23 @@
     },
     "larger": {
       "font": "larger-font",
-      "fontColor": { "r": 1, "g": 0.18039216, "b": 0.17254902, "a": 1 } // Yellow color
+      "fontColor": { "r": 1, "g": 1, "b": 0, "a": 1 }
     },
     "highlighted": {
       "font": "default-font",
-      "fontColor": { "r": 0, "g": 1, "b": 0, "a": 1 } // Green color
+      "fontColor": { "r": 0, "g": 1, "b": 0, "a": 1 }
     },
     "white": {
       "font": "default-font",
-      "fontColor": { "r": 1, "g": 1, "b": 1, "a": 1 } // White color for wind speed
+      "fontColor": { "r": 1, "g": 1, "b": 1, "a": 1 }
     },
     "green": {
       "font": "default-font",
-      "fontColor": { "r": 0, "g": 1, "b": 0, "a": 1 } // Green color for zeppelin speed
+      "fontColor": { "r": 0, "g": 1, "b": 0, "a": 1 }
     },
     "red": {
       "font": "default-font",
-      "fontColor": { "r": 1, "g": 0, "b": 0, "a": 1 } // Red color for timer
+      "fontColor": { "r": 1, "g": 0, "b": 0, "a": 1 }
     }
   },
   "com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle": {
@@ -36,11 +36,11 @@
       "font": "default-font",
       "fontColor": { "r": 1, "g": 1, "b": 1, "a": 1 }
     },
-    "larger": {
+    "small": {
       "up": "default-round",
       "down": "default-round-down",
-      "font": "larger-font",
-      "fontColor": { "r": 1, "g": 1, "b": 0, "a": 1 } // Yellow color
+      "font": "default-font",
+      "fontColor": { "r": 1, "g": 1, "b": 1, "a": 1 }
     }
   },
   "com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle": {

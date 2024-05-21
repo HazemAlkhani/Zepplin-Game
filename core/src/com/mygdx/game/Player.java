@@ -84,4 +84,14 @@ public class Player {
         // Add the wind vector to the current velocity
         velocity.add(wind);
     }
+
+    private boolean paused;
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
 }

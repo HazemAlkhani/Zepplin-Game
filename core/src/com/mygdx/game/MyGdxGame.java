@@ -36,6 +36,7 @@ public class MyGdxGame extends Game {
 		assetManager.load("sounds/winSound.mp3", Sound.class);
 		assetManager.load("ui/uiskin.atlas", TextureAtlas.class);
 
+
 		// Finish loading
 		assetManager.finishLoading();
 
