@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.Vector2;
 import java.util.Random;
 
@@ -13,9 +14,10 @@ public class EnvironmentalManager {
     private final Vector2 wind = new Vector2();
     private final Random random = new Random();
     private final Vector2 targetWind = new Vector2();
+    private final Sound windSound;
 
-    public EnvironmentalManager() {
-        // Initialize with no wind
+    public EnvironmentalManager(Sound windSound) {
+        this.windSound = windSound;
         this.wind.set(0, 0);
     }
 
@@ -31,6 +33,7 @@ public class EnvironmentalManager {
             float randomChangeY = (random.nextFloat() - 0.5f) * MAX_WIND_CHANGE;
             targetWind.set(randomChangeX, randomChangeY);
             targetWind.limit(WIND_MAX_SPEED);
+            windSound.play(); // Play wind sound when wind changes
         }
 
         // Smoothly adjust wind towards target wind
@@ -41,6 +44,7 @@ public class EnvironmentalManager {
             targetWind.add((random.nextFloat() - 0.5f) * 2 * MAX_WIND_CHANGE,
                     (random.nextFloat() - 0.5f) * 2 * MAX_WIND_CHANGE);
             targetWind.limit(WIND_MAX_SPEED);
+            windSound.play(); // Play wind sound when gust occurs
         }
     }
 

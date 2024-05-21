@@ -3,15 +3,19 @@ package com.mygdx.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class MyGdxGame extends Game {
 	private SpriteBatch batch;
 	private AssetManager assetManager;
+	private Skin uiSkin;
 
 	@Override
 	public void create() {
@@ -19,33 +23,43 @@ public class MyGdxGame extends Game {
 		assetManager = new AssetManager();
 
 		// Load assets
-		assetManager.load("default.fnt", BitmapFont.class);
-		assetManager.load("ui.atlas", TextureAtlas.class);
-		assetManager.load("map1.png", Texture.class);
-		assetManager.load("Zepplin L19.png", Texture.class);
+		assetManager.load("fonts/default.fnt", BitmapFont.class);
+		assetManager.load("fonts/larger-font.fnt", BitmapFont.class);
+		assetManager.load("images/default-round.png", Texture.class);
+		assetManager.load("images/default-round-down.png", Texture.class);
+		assetManager.load("images/background.png", Texture.class);
+		assetManager.load("images/map1.png", Texture.class);
+		assetManager.load("images/Zepplin L19.png", Texture.class);
+		assetManager.load("sounds/zeppelinSound.mp3", Sound.class);
+		assetManager.load("sounds/WindSound.mp3", Sound.class);
+		assetManager.load("sounds/gameOverSound.mp3", Sound.class);
+		assetManager.load("sounds/winSound.mp3", Sound.class);
+		assetManager.load("ui/uiskin.atlas", TextureAtlas.class);
 
 		// Finish loading
 		assetManager.finishLoading();
 
 		// Create the skin
-		Skin uiSkin = new Skin();
-		uiSkin.add("default-font", assetManager.get("default.fnt", BitmapFont.class));
-		TextureAtlas atlas = assetManager.get("ui.atlas", TextureAtlas.class);
-		uiSkin.addRegions(atlas);
+		uiSkin = new Skin();
+		uiSkin.addRegions(assetManager.get("ui/uiskin.atlas", TextureAtlas.class));
+		uiSkin.add("default-font", assetManager.get("fonts/default.fnt", BitmapFont.class));
+		uiSkin.add("larger-font", assetManager.get("fonts/larger-font.fnt", BitmapFont.class));
+		uiSkin.add("background", new TextureRegionDrawable(new TextureRegion(assetManager.get("images/background.png", Texture.class))));
 
 		// Load the JSON definitions
-		uiSkin.load(Gdx.files.internal("uiskin.json"));
+		uiSkin.load(Gdx.files.internal("ui/uiskin.json"));
 
 		// Set the game screen
 		setScreen(new GameScreen(batch,
-				assetManager.get("map1.png", Texture.class),
-				assetManager.get("Zepplin L19.png", Texture.class),
-				uiSkin));
+				assetManager.get("images/map1.png", Texture.class),
+				assetManager.get("images/Zepplin L19.png", Texture.class),
+				uiSkin, assetManager));
 	}
 
 	@Override
 	public void dispose() {
 		if (batch != null) batch.dispose();
 		if (assetManager != null) assetManager.dispose();
+		if (uiSkin != null) uiSkin.dispose();
 	}
 }
