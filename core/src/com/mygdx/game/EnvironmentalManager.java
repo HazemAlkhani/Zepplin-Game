@@ -13,12 +13,13 @@ import java.util.List;
 import java.util.Random;
 
 public class EnvironmentalManager {
-    private static final float WIND_MAX_SPEED = 2f; // Reduced wind speed for realism
-    private static final float WIND_CHANGE_FREQUENCY = 0.005f; // Further reduced probability for realism
-    private static final float MAX_WIND_CHANGE = 1f; // Reduced max wind change for realism
-    private static final float LERP_FACTOR = 0.02f; // Slower lerp for smoother transitions
-    private static final float GUST_PROBABILITY = 0.005f; // Further reduced gust frequency
-    private static final int NUM_CLOUDS = 30; // Number of clouds
+    private static final float WIND_MAX_SPEED = 0.5f; // Reduced wind speed for realism
+    private static final float WIND_CHANGE_FREQUENCY = 0.001f; // Further reduced probability for realism
+    private static final float MAX_WIND_CHANGE = 0.1f; // Reduced max wind change for realism
+    private static final float LERP_FACTOR = 0.01f; // Slower lerp for smoother transitions
+    private static final float GUST_PROBABILITY = 0.001f; // Further reduced gust frequency
+    private static final int NUM_CLOUDS = 20; // Number of clouds
+    private static final float CLOUD_SPEED_MULTIPLIER = 10f; // Speed multiplier for clouds
 
     private final Vector2 wind = new Vector2();
     private final Random random = new Random();
@@ -37,8 +38,8 @@ public class EnvironmentalManager {
         for (int i = 0; i < NUM_CLOUDS; i++) {
             float startX = random.nextInt(Gdx.graphics.getWidth());
             float startY = random.nextInt(Gdx.graphics.getHeight());
-            float cloudWidth = 60;  // Set desired cloud width
-            float cloudHeight = 40; // Set desired cloud height
+            float cloudWidth = 65;  // Set desired cloud width
+            float cloudHeight = 35; // Set desired cloud height
             clouds.add(new Cloud(cloudTexture, startX, startY, cloudWidth, cloudHeight));
         }
     }
@@ -47,7 +48,7 @@ public class EnvironmentalManager {
         adjustWindConditions();
         player.applyWindEffect(wind);
         for (Cloud cloud : clouds) {
-            cloud.update(wind, delta);
+            cloud.update(wind, delta * CLOUD_SPEED_MULTIPLIER); // Increase cloud speed
         }
     }
 
@@ -76,11 +77,27 @@ public class EnvironmentalManager {
         }
     }
 
-    public void drawWindDirection(ShapeRenderer shapeRenderer, Vector2 startPosition) {
-        Vector2 endPosition = new Vector2(startPosition).add(wind.cpy().scl(50)); // Scale wind for visibility
-        shapeRenderer.setColor(Color.BLUE);
+    public void drawCompass(ShapeRenderer shapeRenderer, float x, float y) {
+        float radius = 50;
+        float angle = wind.angleRad();
+        float needleLength = 40;
+
+        // Draw the compass circle
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.line(startPosition, endPosition);
+        shapeRenderer.setColor(Color.BLACK);
+        shapeRenderer.circle(x, y, radius);
+        shapeRenderer.end();
+
+        // Draw the compass needle
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.rectLine(
+                x,
+                y,
+                x + (float)Math.cos(angle) * needleLength,
+                y + (float)Math.sin(angle) * needleLength,
+                3 // line width
+        );
         shapeRenderer.end();
     }
 

@@ -8,6 +8,7 @@ public class Player {
     public boolean canMove;
     private float speed = 0;
     private boolean gameStarted = false;
+    private boolean paused = false;
 
     public Player(float startX, float startY) {
         this.position = new Vector2(startX, startY);
@@ -15,7 +16,7 @@ public class Player {
     }
 
     public void startMoving() {
-        if (!canMove) {
+        if (!canMove && !paused) {
             canMove = true;
             gameStarted = true;
             speed = 1; // Ensure speed is never zero once started
@@ -28,19 +29,19 @@ public class Player {
     }
 
     public void moveUp() {
-        if (canMove) {
+        if (canMove && !paused) {
             velocity.y = speed;
         }
     }
 
     public void moveDown() {
-        if (canMove) {
+        if (canMove && !paused) {
             velocity.y = -speed;
         }
     }
 
     public void update(float delta) {
-        if (canMove) {
+        if (canMove && !paused) {
             position.add(velocity.x * delta, velocity.y * delta);
             if (velocity.y != 0) {
                 velocity.y *= 0.9f;
@@ -49,7 +50,7 @@ public class Player {
     }
 
     public void adjustSpeed(float increment) {
-        if (canMove) {
+        if (canMove && !paused) {
             float maxSpeed = 20;
             speed = Math.max(1, Math.min(maxSpeed, speed + increment));
             velocity.x = -speed;
@@ -62,6 +63,7 @@ public class Player {
         speed = 0;
         canMove = false;
         gameStarted = false;
+        paused = false; // Reset paused state
     }
 
     public Vector2 getPosition() {
@@ -81,11 +83,11 @@ public class Player {
     }
 
     public void applyWindEffect(Vector2 wind) {
-        // Add the wind vector to the current velocity
-        velocity.add(wind);
+        if (!paused) {
+            // Add the wind vector to the current velocity
+            velocity.add(wind);
+        }
     }
-
-    private boolean paused;
 
     public boolean isPaused() {
         return paused;

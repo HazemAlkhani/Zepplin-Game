@@ -29,7 +29,7 @@ public class MyGdxGame extends Game {
 		assetManager.load("images/default-round-down.png", Texture.class);
 		assetManager.load("images/background.png", Texture.class);
 		assetManager.load("images/map1.png", Texture.class);
-		assetManager.load("images/Zepplin L19.png", Texture.class);
+		assetManager.load("images/Zepplin L20.png", Texture.class);
 		assetManager.load("sounds/zeppelinSound.mp3", Sound.class);
 		assetManager.load("sounds/WindSound.mp3", Sound.class);
 		assetManager.load("sounds/gameOverSound.mp3", Sound.class);
@@ -53,7 +53,7 @@ public class MyGdxGame extends Game {
 		// Set the game screen
 		setScreen(new GameScreen(batch,
 				assetManager.get("images/map1.png", Texture.class),
-				assetManager.get("images/Zepplin L19.png", Texture.class),
+				assetManager.get("images/Zepplin L20.png", Texture.class),
 				uiSkin, assetManager));
 	}
 

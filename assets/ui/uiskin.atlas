@@ -1,13 +1,15 @@
 uiskin.png
-size:2048,1024
+size:2048,2048
 repeat:none
 Zepplin L19
-bounds:2,19,620,201
+bounds:2,68,620,201
+Zepplin L20
+bounds:2,271,1567,218
 background
-bounds:1581,807,300,200
+bounds:1581,1076,300,200
 default-round
-bounds:2,2,39,15
+bounds:624,254,39,15
 default-round-down
-bounds:624,156,64,64
+bounds:2,2,64,64
 map1
-bounds:2,222,1577,785
+bounds:2,491,1577,785

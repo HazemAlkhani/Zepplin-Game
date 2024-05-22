@@ -8,7 +8,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -21,11 +20,10 @@ public class GameScreen implements Screen {
     private final Texture mapTexture;
     private final Texture zeppelinTexture;
     private final Texture backgroundTexture;
-    private final Texture cloudTexture; // Add this field
+    private final Texture cloudTexture;
     private final OrthographicCamera camera;
     private final Player player;
     private final EnvironmentalManager environmentalManager;
-    private final FrameBuffer fogBuffer;
     private final ShapeRenderer shapeRenderer;
     private final Vector2 finalDestination;
     private final Stage stage;
@@ -33,21 +31,21 @@ public class GameScreen implements Screen {
     private final Label windLabel;
     private final Label timerLabel;
     private final Skin uiSkin;
-    private final Container<Table> container; // Make the container final
+    private final Container<Table> container;
     private float gameTime;
     private static final float MAX_GAME_TIME = 60f;
     private static final float ENDPOINT_RADIUS = 3f;
     private boolean isGameOver;
-    private boolean isZeppelinSoundPlaying = false; // Track if Zeppelin sound is playing
+    private boolean isZeppelinSoundPlaying = false;
 
     private final Sound zeppelinSound;
     private final Sound windSound;
     private final Sound gameOverSound;
     private final Sound winSound;
-    private static final float ZEPPELIN_VOLUME = 0.9f; // Volume for Zeppelin sound
-    private static final float WIND_VOLUME = 0.06f; // Volume for Wind sound
-    private static final float GAME_OVER_VOLUME = 0.9f; // Volume for Game Over sound
-    private static final float WIN_VOLUME = 0.9f; // Volume for Win sound
+    private static final float ZEPPELIN_VOLUME = 0.9f;
+    private static final float WIND_VOLUME = 0.06f;
+    private static final float GAME_OVER_VOLUME = 0.9f;
+    private static final float WIN_VOLUME = 0.9f;
 
     public GameScreen(SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture, Skin uiSkin, AssetManager assetManager) {
         this.batch = batch;
@@ -65,9 +63,8 @@ public class GameScreen implements Screen {
         winSound = assetManager.get("sounds/winSound.mp3", Sound.class);
 
         cloudTexture = new Texture(Gdx.files.internal("images/cloud.png"));
-        environmentalManager = new EnvironmentalManager(windSound, WIND_VOLUME, cloudTexture); // Pass cloud texture
+        environmentalManager = new EnvironmentalManager(windSound, WIND_VOLUME, cloudTexture);
         player = new Player(620, 500);
-        fogBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 800, 600, false);
         shapeRenderer = new ShapeRenderer();
         finalDestination = new Vector2(60, 297);
         gameTime = MAX_GAME_TIME;
@@ -78,37 +75,28 @@ public class GameScreen implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Create labels with specific styles
-        speedLabel = new Label("Speed: 0", uiSkin, "green");  // Use green style for zeppelin speed
-        windLabel = new Label("Wind: 0,0", uiSkin, "white");  // Use white style for wind speed
-        timerLabel = new Label("Time: 60", uiSkin, "red");  // Use red style for timer
+        speedLabel = new Label("Speed: 0", uiSkin, "green");
+        windLabel = new Label("Wind: 0,0", uiSkin, "white");
+        timerLabel = new Label("Time: 60", uiSkin, "red");
 
-        // Create a table and set its background
         Table table = new Table();
         table.setBackground(new TextureRegionDrawable(new TextureRegion(backgroundTexture)));
 
-        // Desired size of the small background
         int backgroundWidth = 300;
         int backgroundHeight = 100;
 
-        // Set the size of the table
         table.setSize(backgroundWidth, backgroundHeight);
 
-        // Add padding and labels to the table
         table.pad(10);
         table.add(speedLabel).expandX().left().padBottom(5).row();
         table.add(windLabel).expandX().left().padBottom(5).row();
         table.add(timerLabel).expandX().left().padBottom(5).row();
 
-        // Create a container to hold the table and position it in the bottom-right corner
         container = new Container<>(table);
         container.setSize(backgroundWidth, backgroundHeight);
-        container.setPosition(Gdx.graphics.getWidth() - backgroundWidth - 10, 10); // Position 10 pixels from the right and bottom edges
+        container.setPosition(Gdx.graphics.getWidth() - backgroundWidth - 10, 10);
 
-        // Add the container to the stage
         stage.addActor(container);
-
-        clearFog();
     }
 
     private void handleInput() {
@@ -116,12 +104,10 @@ public class GameScreen implements Screen {
             if (Gdx.input.isKeyPressed(Input.Keys.A)) {
                 player.startMoving();
                 if (!isZeppelinSoundPlaying) {
-                    zeppelinSound.loop(ZEPPELIN_VOLUME); // Start playing the Zeppelin sound in a loop with volume
+                    zeppelinSound.loop(ZEPPELIN_VOLUME);
                     isZeppelinSoundPlaying = true;
                 }
-                if (player.canMove) {
-                    player.adjustSpeed(0.1f);
-                }
+                player.adjustSpeed(0.1f);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.Z)) {
                 player.adjustSpeed(-0.1f);
@@ -141,18 +127,11 @@ public class GameScreen implements Screen {
     private void restartGame() {
         player.reset(620, 500);
         gameTime = MAX_GAME_TIME;
-        zeppelinSound.stop(); // Stop the Zeppelin sound
-        windSound.stop(); // Stop the wind sound
-        isZeppelinSoundPlaying = false; // Reset the sound state
-        isGameOver = false; // Reset game over state
-        player.setPaused(false); // Unpause the game
-    }
-
-    private void clearFog() {
-        fogBuffer.begin();
-        Gdx.gl.glClearColor(1, 1, 1, 0);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        fogBuffer.end();
+        zeppelinSound.stop();
+        windSound.stop();
+        isZeppelinSoundPlaying = false;
+        isGameOver = false;
+        player.setPaused(false);
     }
 
     private void updateUI() {
@@ -173,7 +152,7 @@ public class GameScreen implements Screen {
         if (isGameOver) {
             stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
             stage.draw();
-            return; // Don't update or render game if it's over
+            return;
         }
 
         if (player.hasGameStarted()) {
@@ -189,21 +168,19 @@ public class GameScreen implements Screen {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.draw(mapTexture, 0, 0, 800, 600); // Draw the map first
-        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, 30, 15); // Adjusted Zeppelin size
+        batch.draw(mapTexture, 0, 0, 800, 600);
+        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, 50, 15);
 
-        // Draw the clouds
         environmentalManager.draw(batch);
         batch.end();
 
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // Draw wind direction
-        environmentalManager.drawWindDirection(shapeRenderer, player.getPosition());
+        environmentalManager.drawCompass(shapeRenderer, 70, 70);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.RED);
-        shapeRenderer.circle(finalDestination.x, finalDestination.y, ENDPOINT_RADIUS); // Adjusted endpoint radius
+        shapeRenderer.circle(finalDestination.x, finalDestination.y, ENDPOINT_RADIUS);
         shapeRenderer.end();
 
         updateUI();
@@ -214,20 +191,20 @@ public class GameScreen implements Screen {
     }
 
     private void showDialog(String title, String message) {
-        player.setPaused(true); // Pause the game
+        player.setPaused(true);
         Dialog dialog = new Dialog(title, uiSkin) {
             @Override
             protected void result(Object object) {
                 if ((boolean) object) {
-                    player.setPaused(false); // Unpause the game when the dialog is closed
+                    player.setPaused(false);
                     restartGame();
                 }
             }
         };
-        dialog.text(message).pad(20, 10, 30, 10); // Adjust the padding (top, left, bottom, right)
+        dialog.text(message).pad(20, 10, 30, 10);
         TextButton okButton = new TextButton("OK", uiSkin, "small");
-        okButton.setSize(100, 50);  // Set the size of the button
-        dialog.button(okButton, true); // Pass true to result method when OK is clicked
+        okButton.setSize(100, 50);
+        dialog.button(okButton, true);
         dialog.show(stage);
         dialog.pack();
         dialog.setPosition((Gdx.graphics.getWidth() - dialog.getWidth()) / 2,
@@ -238,27 +215,27 @@ public class GameScreen implements Screen {
         if (gameTime <= 0 && !player.isAtEndpoint(finalDestination)) {
             windSound.stop();
             zeppelinSound.stop();
-            isZeppelinSoundPlaying = false; // Reset the sound state
-            gameOverSound.play(GAME_OVER_VOLUME);  // Play game over sound with volume
-            isGameOver = true; // Set game over state
+            isZeppelinSoundPlaying = false;
+            gameOverSound.play(GAME_OVER_VOLUME);
+            isGameOver = true;
             showDialog("Game Over", "You are too late!");
         }
 
         if (player.isAtEndpoint(finalDestination)) {
             zeppelinSound.stop();
             windSound.stop();
-            isZeppelinSoundPlaying = false; // Reset the sound state
-            winSound.play(WIN_VOLUME); // Play win sound with volume
-            isGameOver = true; // Set game over state
+            isZeppelinSoundPlaying = false;
+            winSound.play(WIN_VOLUME);
+            isGameOver = true;
             showDialog("Congratulations!", "You have reached Liverpool!");
         }
 
         if (player.isOutOfBounds(0)) {
             windSound.stop();
             zeppelinSound.stop();
-            isZeppelinSoundPlaying = false; // Reset the sound state
-            gameOverSound.play(GAME_OVER_VOLUME); // Play game over sound with volume
-            isGameOver = true; // Set game over state
+            isZeppelinSoundPlaying = false;
+            gameOverSound.play(GAME_OVER_VOLUME);
+            isGameOver = true;
             showDialog("Game Over", "You went far away!");
         }
     }
@@ -266,7 +243,7 @@ public class GameScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-        container.setPosition(width - container.getWidth() - 10, 10); // Reposition the container
+        container.setPosition(width - container.getWidth() - 10, 10);
     }
 
     @Override
@@ -285,8 +262,7 @@ public class GameScreen implements Screen {
         mapTexture.dispose();
         zeppelinTexture.dispose();
         backgroundTexture.dispose();
-        cloudTexture.dispose(); // Dispose the cloud texture
-        fogBuffer.dispose();
+        cloudTexture.dispose();
         stage.dispose();
         uiSkin.dispose();
         zeppelinSound.dispose();
