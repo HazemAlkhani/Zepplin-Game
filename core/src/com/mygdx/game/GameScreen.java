@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class GameScreen implements Screen {
+    private final MyGdxGame game;
     private final SpriteBatch batch;
     private final Texture mapTexture;
     private final Texture zeppelinTexture;
@@ -30,6 +31,8 @@ public class GameScreen implements Screen {
     private final Label speedLabel;
     private final Label windLabel;
     private final Label timerLabel;
+    private final Label levelLabel;
+    private final Label cloudsLabel;
     private final Skin uiSkin;
     private final Container<Table> container;
     private float gameTime;
@@ -37,6 +40,9 @@ public class GameScreen implements Screen {
     private static final float ENDPOINT_RADIUS = 3f;
     private boolean isGameOver;
     private boolean isZeppelinSoundPlaying = false;
+    private int level;
+    private float zeppelinWidth;
+    private float zeppelinHeight;
 
     private final Sound zeppelinSound;
     private final Sound windSound;
@@ -47,11 +53,13 @@ public class GameScreen implements Screen {
     private static final float GAME_OVER_VOLUME = 0.9f;
     private static final float WIN_VOLUME = 0.9f;
 
-    public GameScreen(SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture, Skin uiSkin, AssetManager assetManager) {
+    public GameScreen(MyGdxGame game, SpriteBatch batch, Texture mapTexture, Texture zeppelinTexture, Skin uiSkin, AssetManager assetManager, int level) {
+        this.game = game;
         this.batch = batch;
         this.mapTexture = mapTexture;
         this.zeppelinTexture = zeppelinTexture;
         this.uiSkin = uiSkin;
+        this.level = level;
 
         camera = new OrthographicCamera(800, 600);
         camera.position.set(400, 300, 0);
@@ -63,7 +71,7 @@ public class GameScreen implements Screen {
         winSound = assetManager.get("sounds/winSound.mp3", Sound.class);
 
         cloudTexture = new Texture(Gdx.files.internal("images/cloud.png"));
-        environmentalManager = new EnvironmentalManager(windSound, WIND_VOLUME, cloudTexture);
+        environmentalManager = new EnvironmentalManager(windSound, WIND_VOLUME, cloudTexture, level);
         player = new Player(620, 500);
         shapeRenderer = new ShapeRenderer();
         finalDestination = new Vector2(60, 297);
@@ -72,18 +80,28 @@ public class GameScreen implements Screen {
 
         backgroundTexture = new Texture(Gdx.files.internal("images/background.png"));
 
+        // Determine Zeppelin size based on the texture used
+        if (zeppelinTexture.equals(assetManager.get("images/Zepplin L19.png", Texture.class))) {
+            zeppelinWidth = 45;
+            zeppelinHeight = 25;
+        } else if (zeppelinTexture.equals(assetManager.get("images/Zepplin L20.png", Texture.class))) {
+            zeppelinWidth = 45;
+            zeppelinHeight = 10;
+        }
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
         speedLabel = new Label("Speed: 0", uiSkin, "green");
         windLabel = new Label("Wind: 0,0", uiSkin, "white");
         timerLabel = new Label("Time: 60", uiSkin, "red");
+        levelLabel = new Label("Level: " + level, uiSkin, "white");
+        cloudsLabel = new Label("Clouds: " + environmentalManager.getNumClouds(), uiSkin, "blue");
 
         Table table = new Table();
         table.setBackground(new TextureRegionDrawable(new TextureRegion(backgroundTexture)));
 
         int backgroundWidth = 300;
-        int backgroundHeight = 100;
+        int backgroundHeight = 150;
 
         table.setSize(backgroundWidth, backgroundHeight);
 
@@ -91,6 +109,8 @@ public class GameScreen implements Screen {
         table.add(speedLabel).expandX().left().padBottom(5).row();
         table.add(windLabel).expandX().left().padBottom(5).row();
         table.add(timerLabel).expandX().left().padBottom(5).row();
+        table.add(levelLabel).expandX().left().padBottom(5).row();
+        table.add(cloudsLabel).expandX().left().padBottom(5).row();
 
         container = new Container<>(table);
         container.setSize(backgroundWidth, backgroundHeight);
@@ -139,6 +159,7 @@ public class GameScreen implements Screen {
         Vector2 wind = environmentalManager.getWind();
         windLabel.setText(String.format("Wind: %.2f, %.2f", wind.x, wind.y));
         timerLabel.setText(String.format("Time: %.2f s", gameTime));
+        cloudsLabel.setText("Clouds: " + environmentalManager.getNumClouds());
     }
 
     @Override
@@ -169,7 +190,7 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(mapTexture, 0, 0, 800, 600);
-        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, 50, 15);
+        batch.draw(zeppelinTexture, player.getPosition().x, player.getPosition().y, zeppelinWidth, zeppelinHeight);
 
         environmentalManager.draw(batch);
         batch.end();
@@ -192,23 +213,12 @@ public class GameScreen implements Screen {
 
     private void showDialog(String title, String message) {
         player.setPaused(true);
-        Dialog dialog = new Dialog(title, uiSkin) {
-            @Override
-            protected void result(Object object) {
-                if ((boolean) object) {
-                    player.setPaused(false);
-                    restartGame();
-                }
-            }
-        };
-        dialog.text(message).pad(20, 10, 30, 10);
-        TextButton okButton = new TextButton("OK", uiSkin, "small");
-        okButton.setSize(100, 50);
-        dialog.button(okButton, true);
+        Dialog dialog = new Dialog(title, uiSkin);
+        dialog.text(message).pad(20);
+        dialog.button("OK", true).pad(10);
         dialog.show(stage);
-        dialog.pack();
-        dialog.setPosition((Gdx.graphics.getWidth() - dialog.getWidth()) / 2,
-                (Gdx.graphics.getHeight() - dialog.getHeight()) / 2);
+        dialog.setSize(400, 200);
+        dialog.setPosition((Gdx.graphics.getWidth() - dialog.getWidth()) / 2, (Gdx.graphics.getHeight() - dialog.getHeight()) / 2);
     }
 
     private void checkGameEndConditions() {

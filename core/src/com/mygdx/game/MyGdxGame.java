@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -29,13 +30,13 @@ public class MyGdxGame extends Game {
 		assetManager.load("images/default-round-down.png", Texture.class);
 		assetManager.load("images/background.png", Texture.class);
 		assetManager.load("images/map1.png", Texture.class);
+		assetManager.load("images/Zepplin L19.png", Texture.class);
 		assetManager.load("images/Zepplin L20.png", Texture.class);
 		assetManager.load("sounds/zeppelinSound.mp3", Sound.class);
 		assetManager.load("sounds/WindSound.mp3", Sound.class);
 		assetManager.load("sounds/gameOverSound.mp3", Sound.class);
 		assetManager.load("sounds/winSound.mp3", Sound.class);
 		assetManager.load("ui/uiskin.atlas", TextureAtlas.class);
-
 
 		// Finish loading
 		assetManager.finishLoading();
@@ -50,11 +51,11 @@ public class MyGdxGame extends Game {
 		// Load the JSON definitions
 		uiSkin.load(Gdx.files.internal("ui/uiskin.json"));
 
-		// Set the game screen
-		setScreen(new GameScreen(batch,
-				assetManager.get("images/map1.png", Texture.class),
-				assetManager.get("images/Zepplin L20.png", Texture.class),
-				uiSkin, assetManager));
+		// Add a style for the title
+		uiSkin.add("title", new Label.LabelStyle(new BitmapFont(), com.badlogic.gdx.graphics.Color.BLACK));
+
+		// Set the initial screen to ZeppelinSelection
+		setScreen(new ZeppelinSelection(this, batch, assetManager, uiSkin));
 	}
 
 	@Override

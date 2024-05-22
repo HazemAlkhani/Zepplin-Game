@@ -18,7 +18,6 @@ public class EnvironmentalManager {
     private static final float MAX_WIND_CHANGE = 0.1f; // Reduced max wind change for realism
     private static final float LERP_FACTOR = 0.01f; // Slower lerp for smoother transitions
     private static final float GUST_PROBABILITY = 0.001f; // Further reduced gust frequency
-    private static final int NUM_CLOUDS = 20; // Number of clouds
     private static final float CLOUD_SPEED_MULTIPLIER = 10f; // Speed multiplier for clouds
 
     private final Vector2 wind = new Vector2();
@@ -29,13 +28,15 @@ public class EnvironmentalManager {
 
     private final List<Cloud> clouds;
 
-    public EnvironmentalManager(Sound windSound, float windVolume, Texture cloudTexture) {
+    public EnvironmentalManager(Sound windSound, float windVolume, Texture cloudTexture, int level) {
         this.windSound = windSound;
         this.windVolume = windVolume;
         this.wind.set(0, 0);
         this.clouds = new ArrayList<>();
 
-        for (int i = 0; i < NUM_CLOUDS; i++) {
+        int numClouds = 20 + (level - 1) * 50; // Increase clouds per level
+
+        for (int i = 0; i < numClouds; i++) {
             float startX = random.nextInt(Gdx.graphics.getWidth());
             float startY = random.nextInt(Gdx.graphics.getHeight());
             float cloudWidth = 65;  // Set desired cloud width
@@ -82,21 +83,19 @@ public class EnvironmentalManager {
         float angle = wind.angleRad();
         float needleLength = 40;
 
-        // Draw the compass circle
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.BLACK);
         shapeRenderer.circle(x, y, radius);
         shapeRenderer.end();
 
-        // Draw the compass needle
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.RED);
         shapeRenderer.rectLine(
                 x,
                 y,
-                x + (float)Math.cos(angle) * needleLength,
-                y + (float)Math.sin(angle) * needleLength,
-                3 // line width
+                x + (float) Math.cos(angle) * needleLength,
+                y + (float) Math.sin(angle) * needleLength,
+                3
         );
         shapeRenderer.end();
     }
@@ -105,12 +104,16 @@ public class EnvironmentalManager {
         return wind;
     }
 
+    public int getNumClouds() {
+        return clouds.size();
+    }
+
     private static class Cloud {
         private final Texture texture;
         private final Vector2 position;
         private final Vector2 velocity;
-        private final float width;  // Cloud width
-        private final float height; // Cloud height
+        private final float width;
+        private final float height;
 
         public Cloud(Texture texture, float startX, float startY, float width, float height) {
             this.texture = texture;
@@ -131,7 +134,7 @@ public class EnvironmentalManager {
         }
 
         public void draw(SpriteBatch batch) {
-            batch.draw(texture, position.x, position.y, width, height); // Use width and height
+            batch.draw(texture, position.x, position.y, width, height);
         }
     }
 }
