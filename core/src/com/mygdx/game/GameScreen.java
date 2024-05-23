@@ -35,6 +35,7 @@ public class GameScreen implements Screen {
     private final Label cloudsLabel;
     private final Skin uiSkin;
     private final Container<Table> container;
+    private final AssetManager assetManager;
     private float gameTime;
     private static final float MAX_GAME_TIME = 60f;
     private static final float ENDPOINT_RADIUS = 3f;
@@ -59,6 +60,7 @@ public class GameScreen implements Screen {
         this.mapTexture = mapTexture;
         this.zeppelinTexture = zeppelinTexture;
         this.uiSkin = uiSkin;
+        this.assetManager = assetManager;
         this.level = level;
 
         camera = new OrthographicCamera(800, 600);
@@ -213,7 +215,19 @@ public class GameScreen implements Screen {
 
     private void showDialog(String title, String message) {
         player.setPaused(true);
-        Dialog dialog = new Dialog(title, uiSkin);
+        Dialog dialog = new Dialog(title, uiSkin) {
+            @Override
+            protected void result(Object object) {
+                if ((boolean) object) {
+                    player.setPaused(false);
+                    if (title.equals("Congratulations!")) {
+                        game.setScreen(new GameScreen(game, batch, mapTexture, zeppelinTexture, uiSkin, assetManager, level + 1));
+                    } else {
+                        restartGame();
+                    }
+                }
+            }
+        };
         dialog.text(message).pad(20);
         dialog.button("OK", true).pad(10);
         dialog.show(stage);
