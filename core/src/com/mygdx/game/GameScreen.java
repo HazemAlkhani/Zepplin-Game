@@ -40,7 +40,7 @@ public class GameScreen implements Screen {
     private static final float ENDPOINT_RADIUS = 3f;
     private boolean isGameOver;
     private boolean isZeppelinSoundPlaying = false;
-    private int level;
+    private final int level;
     private float zeppelinWidth;
     private float zeppelinHeight;
 

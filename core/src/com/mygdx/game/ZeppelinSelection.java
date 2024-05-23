@@ -3,12 +3,9 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -18,16 +15,24 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 
 public class ZeppelinSelection implements Screen {
     private final MyGdxGame game;
+    private final SpriteBatch batch;
+    private final AssetManager assetManager;
     private final Stage stage;
     private final Skin uiSkin;
 
     public ZeppelinSelection(MyGdxGame game, SpriteBatch batch, AssetManager assetManager, Skin uiSkin) {
         this.game = game;
+        this.batch = batch;
+        this.assetManager = assetManager;
         this.stage = new Stage(new ScreenViewport());
         this.uiSkin = uiSkin;
 
         Gdx.input.setInputProcessor(stage);
+        createSelectionScreen();
+    }
 
+    private void createSelectionScreen() {
+        stage.clear();
         Texture zeppelinTextureL19 = assetManager.get("images/Zepplin L19.png", Texture.class);
         Texture zeppelinTextureL20 = assetManager.get("images/Zepplin L20.png", Texture.class);
 
@@ -66,7 +71,7 @@ public class ZeppelinSelection implements Screen {
         aboutButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                showDialog("About Game", "Use 'A' to speed up, 'Z' to slow down, 'UP' to move up, and 'DOWN' to move down. Navigate the zeppelin to reach the destination.", 500, 300, Color.DARK_GRAY);
+                showBackground(assetManager.get("images/info-background.png", Texture.class));
             }
         });
 
@@ -74,7 +79,7 @@ public class ZeppelinSelection implements Screen {
         historyButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                showDialog("History", "In 1915, Zeppelin airships bombed Liverpool as part of the German air campaign during World War I. This game educates players about this historical event.", 600, 400, Color.DARK_GRAY);
+                showBackground(assetManager.get("images/history-background.png", Texture.class));
             }
         });
 
@@ -90,23 +95,23 @@ public class ZeppelinSelection implements Screen {
         stage.addActor(table);
     }
 
-    private void showDialog(String title, String message, float width, float height, Color backgroundColor) {
-        Dialog dialog = new Dialog(title, uiSkin);
-        dialog.text(message).pad(20);
-        dialog.button("OK", true).pad(10);
-        dialog.getContentTable().setBackground(new TextureRegionDrawable(new TextureRegion(createBackgroundTexture((int) width, (int) height, backgroundColor))));
-        dialog.show(stage);
-        dialog.setSize(width, height);
-        dialog.setPosition((Gdx.graphics.getWidth() - dialog.getWidth()) / 2, (Gdx.graphics.getHeight() - dialog.getHeight()) / 2);
-    }
+    private void showBackground(Texture backgroundTexture) {
+        stage.clear();
+        Image backgroundImage = new Image(new TextureRegionDrawable(backgroundTexture));
+        backgroundImage.setSize(1200, 800);
 
-    private Texture createBackgroundTexture(int width, int height, Color color) {
-        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        pixmap.setColor(color);
-        pixmap.fill();
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return texture;
+        TextButton backButton = new TextButton("Back", uiSkin);
+        backButton.setSize(100, 50);
+        backButton.setPosition(1100, 50); // Adjust the position as needed
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                createSelectionScreen(); // Recreate the selection screen after hiding the background image
+            }
+        });
+
+        stage.addActor(backgroundImage);
+        stage.addActor(backButton);
     }
 
     @Override

@@ -32,6 +32,8 @@ public class MyGdxGame extends Game {
 		assetManager.load("images/map1.png", Texture.class);
 		assetManager.load("images/Zepplin L19.png", Texture.class);
 		assetManager.load("images/Zepplin L20.png", Texture.class);
+		assetManager.load("images/history-background.png", Texture.class);
+		assetManager.load("images/info-background.png", Texture.class);
 		assetManager.load("sounds/zeppelinSound.mp3", Sound.class);
 		assetManager.load("sounds/WindSound.mp3", Sound.class);
 		assetManager.load("sounds/gameOverSound.mp3", Sound.class);
