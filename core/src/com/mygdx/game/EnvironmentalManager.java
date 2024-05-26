@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Random;
 
 public class EnvironmentalManager {
-    private static final float WIND_MAX_SPEED = 0.5f; // Reduced wind speed for realism
-    private static final float WIND_CHANGE_FREQUENCY = 0.001f; // Further reduced probability for realism
-    private static final float MAX_WIND_CHANGE = 0.1f; // Reduced max wind change for realism
-    private static final float LERP_FACTOR = 0.01f; // Slower lerp for smoother transitions
-    private static final float GUST_PROBABILITY = 0.001f; // Further reduced gust frequency
-    private static final float CLOUD_SPEED_MULTIPLIER = 10f; // Speed multiplier for clouds
+    private static final float WIND_MAX_SPEED = 8f; // Increased max wind speed for stronger effect
+    private static final float WIND_CHANGE_FREQUENCY = 0.005f; // Frequency for wind changes
+    private static final float MAX_WIND_CHANGE = 0.5f; // Increased max wind change for significant variations
+    private static final float LERP_FACTOR = 0.002f; // Lerp factor for smoother transitions
+    private static final float GUST_PROBABILITY = 0.002f;
+    private static final float CLOUD_SPEED_MULTIPLIER = 20f;
 
     private final Vector2 wind = new Vector2();
     private final Random random = new Random();
@@ -32,15 +32,17 @@ public class EnvironmentalManager {
         this.windSound = windSound;
         this.windVolume = windVolume;
         this.wind.set(0, 0);
+        this.targetWind.set((random.nextFloat() - 0.5f) * 2 * MAX_WIND_CHANGE, (random.nextFloat() - 0.5f) * 2 * MAX_WIND_CHANGE);
+        this.targetWind.limit(WIND_MAX_SPEED);
         this.clouds = new ArrayList<>();
 
-        int numClouds = 20 + (level - 1) * 50; // Increase clouds per level
+        int numClouds = 50 * level; // Initial level has 50 clouds, each subsequent level adds 50 more
 
         for (int i = 0; i < numClouds; i++) {
             float startX = random.nextInt(Gdx.graphics.getWidth());
             float startY = random.nextInt(Gdx.graphics.getHeight());
-            float cloudWidth = 65;  // Set desired cloud width
-            float cloudHeight = 35; // Set desired cloud height
+            float cloudWidth = 75;
+            float cloudHeight = 35;
             clouds.add(new Cloud(cloudTexture, startX, startY, cloudWidth, cloudHeight));
         }
     }
@@ -49,8 +51,9 @@ public class EnvironmentalManager {
         adjustWindConditions();
         player.applyWindEffect(wind);
         for (Cloud cloud : clouds) {
-            cloud.update(wind, delta * CLOUD_SPEED_MULTIPLIER); // Increase cloud speed
+            cloud.update(wind, delta * CLOUD_SPEED_MULTIPLIER);
         }
+
     }
 
     private void adjustWindConditions() {
@@ -79,7 +82,7 @@ public class EnvironmentalManager {
     }
 
     public void drawCompass(ShapeRenderer shapeRenderer, float x, float y) {
-        float radius = 50;
+        float radius = 40;
         float angle = wind.angleRad();
         float needleLength = 40;
 

@@ -5,7 +5,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -246,8 +249,8 @@ public class GameScreen implements Screen {
         }
 
         if (player.isAtEndpoint(finalDestination)) {
-            zeppelinSound.stop();
             windSound.stop();
+            zeppelinSound.stop();
             isZeppelinSoundPlaying = false;
             winSound.play(WIN_VOLUME);
             isGameOver = true;
