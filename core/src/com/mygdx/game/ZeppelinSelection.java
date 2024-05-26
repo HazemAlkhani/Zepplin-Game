@@ -102,11 +102,11 @@ public class ZeppelinSelection implements Screen {
 
         TextButton backButton = new TextButton("Back", uiSkin);
         backButton.setSize(100, 50);
-        backButton.setPosition(1100, 50); // Adjust the position as needed
+        backButton.setPosition(1100, 50);
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                createSelectionScreen(); // Recreate the selection screen after hiding the background image
+                createSelectionScreen();
             }
         });
 

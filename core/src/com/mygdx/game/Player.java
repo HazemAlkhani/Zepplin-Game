@@ -87,7 +87,7 @@ public class Player {
 
     public void applyWindEffect(Vector2 wind) {
         if (!paused) {
-            // Apply a stronger wind effect on both axes
+
             velocity.add(wind.x * 0.2f, wind.y * 0.3f);
         }
     }
