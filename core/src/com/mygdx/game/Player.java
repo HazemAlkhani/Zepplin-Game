@@ -19,7 +19,7 @@ public class Player {
         if (!canMove && !paused) {
             canMove = true;
             gameStarted = true;
-            speed = 1; // Ensure speed is never zero once started
+            speed = 1;
             velocity.x = -speed;
         }
     }
@@ -30,20 +30,20 @@ public class Player {
 
     public void moveUp() {
         if (canMove && !paused) {
-            velocity.y = Math.min(velocity.y + 0.1f, speed); // Gradually increase upward velocity
+            velocity.y = Math.min(velocity.y + 0.1f, speed);
         }
     }
 
     public void moveDown() {
         if (canMove && !paused) {
-            velocity.y = Math.max(velocity.y - 0.1f, -speed); // Gradually increase downward velocity
+            velocity.y = Math.max(velocity.y - 0.1f, -speed);
         }
     }
 
     public void update(float delta) {
         if (canMove && !paused) {
             position.add(velocity.x * delta, velocity.y * delta);
-            // Gradually reduce the vertical velocity to simulate drag/friction
+
             if (velocity.y > 0) {
                 velocity.y = Math.max(0, velocity.y - 0.01f);
             } else if (velocity.y < 0) {
@@ -56,7 +56,7 @@ public class Player {
         if (canMove && !paused) {
             float maxSpeed = 20;
             speed = Math.max(1, Math.min(maxSpeed, speed + increment));
-            velocity.x = -speed; // Update velocity.x to be based on speed
+            velocity.x = -speed;
         }
     }
 
@@ -88,7 +88,7 @@ public class Player {
     public void applyWindEffect(Vector2 wind) {
         if (!paused) {
             // Apply a stronger wind effect on both axes
-            velocity.add(wind.x * 0.2f, wind.y * 0.3f); // Increased wind effect for more noticeable influence
+            velocity.add(wind.x * 0.2f, wind.y * 0.3f);
         }
     }
 

@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Random;
 
 public class EnvironmentalManager {
-    private static final float WIND_MAX_SPEED = 8f; // Increased max wind speed for stronger effect
-    private static final float WIND_CHANGE_FREQUENCY = 0.005f; // Frequency for wind changes
-    private static final float MAX_WIND_CHANGE = 0.5f; // Increased max wind change for significant variations
-    private static final float LERP_FACTOR = 0.002f; // Lerp factor for smoother transitions
+    private static final float WIND_MAX_SPEED = 8f;
+    private static final float WIND_CHANGE_FREQUENCY = 0.005f;
+    private static final float MAX_WIND_CHANGE = 0.5f;
+    private static final float LERP_FACTOR = 0.002f;
     private static final float GUST_PROBABILITY = 0.002f;
     private static final float CLOUD_SPEED_MULTIPLIER = 20f;
 
@@ -36,7 +36,7 @@ public class EnvironmentalManager {
         this.targetWind.limit(WIND_MAX_SPEED);
         this.clouds = new ArrayList<>();
 
-        int numClouds = 50 * level; // Initial level has 50 clouds, each subsequent level adds 50 more
+        int numClouds = 50 * level;
 
         for (int i = 0; i < numClouds; i++) {
             float startX = random.nextInt(Gdx.graphics.getWidth());
