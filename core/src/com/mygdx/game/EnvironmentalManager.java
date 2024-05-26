@@ -36,7 +36,7 @@ public class EnvironmentalManager {
         this.targetWind.limit(WIND_MAX_SPEED);
         this.clouds = new ArrayList<>();
 
-        int numClouds = 50 * level;
+        int numClouds = 75 * level;
 
         for (int i = 0; i < numClouds; i++) {
             float startX = random.nextInt(Gdx.graphics.getWidth());

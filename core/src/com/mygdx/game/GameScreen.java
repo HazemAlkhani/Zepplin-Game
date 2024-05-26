@@ -34,7 +34,7 @@ public class GameScreen implements Screen {
     private final Label speedLabel;
     private final Label windLabel;
     private final Label timerLabel;
-    private final Label levelLabel;
+    private final Label  levelLabel;
     private final Label cloudsLabel;
     private final Skin uiSkin;
     private final Container<Table> container;
