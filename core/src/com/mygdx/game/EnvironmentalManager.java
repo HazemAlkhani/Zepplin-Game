@@ -41,8 +41,8 @@ public class EnvironmentalManager {
         for (int i = 0; i < numClouds; i++) {
             float startX = random.nextInt(Gdx.graphics.getWidth());
             float startY = random.nextInt(Gdx.graphics.getHeight());
-            float cloudWidth = 75;
-            float cloudHeight = 35;
+            float cloudWidth = 100;
+            float cloudHeight = 45;
             clouds.add(new Cloud(cloudTexture, startX, startY, cloudWidth, cloudHeight));
         }
     }
